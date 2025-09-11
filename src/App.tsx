@@ -5,7 +5,9 @@ export const App = () => {
   return (
     <>
       <HeaderComponent />
-      <DataGridDemo></DataGridDemo>
+      <div style={{padding: 5}}>
+        <DataGridDemo></DataGridDemo>
+      </div>
     </>
   );
 }

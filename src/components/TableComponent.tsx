@@ -1,6 +1,10 @@
 import Box from "@mui/material/Box";
 import { DataGrid, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
 import UploadData from "./UploadData";
+import { Button } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
+import { useState } from "react";
+import Actions from "./ActionsComponent";
 
 const columns: GridColDef[] = [
   { 
@@ -11,9 +15,9 @@ const columns: GridColDef[] = [
     align: 'center',
   },
   {
-    field: "name",
+    field: "fullname",
     headerName: "Nombre completo",
-    width: 200,
+    width: 180,
     headerAlign: "center",
     align: 'center',
   },
@@ -55,21 +59,31 @@ const columns: GridColDef[] = [
     align: 'center',
   },
   {
-    field: 'actions',
-    headerName: 'Subir facturas',
-    width: 120,
+    field: 'bills',
+    headerName: 'Facturas',
+    width: 85,
     renderCell: (params: GridRenderCellParams) => {
       return <UploadData rowData={params.row} />;
     },
     headerAlign: 'center',
     align: 'center',
   },
+  {
+    field: 'actions',
+    headerName: 'Acciones',
+    width: 85,
+    renderCell: (params: GridRenderCellParams) => {
+      return <Actions rowData={params.row} />;
+    },
+    headerAlign: 'center',
+    align: 'center',
+  }
 ];
 
 const rows = [
   {
     id: 1,
-    name: "Carlos Piña",
+    fullname: "Carlos Piña",
     idProject: 12345678,
     projectName: "Proyecto 1",
     budget: 1000,
@@ -78,7 +92,7 @@ const rows = [
   },
   {
     id: 2,
-    name: "Yonis Guillermo",
+    fullname: "Yonis Guillermo",
     idProject: 87654321,
     projectName: "Proyecto 2",
     budget: 3200,
@@ -87,7 +101,7 @@ const rows = [
   },
   { 
     id: 3, 
-    name: "José Perez", 
+    fullname: "José Perez", 
     idProject: 10293847, 
     projectName: "Proyecto 3",
     budget: 300,
@@ -96,7 +110,7 @@ const rows = [
   },
   {
     id: 4,
-    name: "Miguel Rojas",
+    fullname: "Miguel Rojas",
     idProject: 56473829,
     projectName: "Proyecto 4",
     budget: 680,
@@ -105,7 +119,7 @@ const rows = [
   },
   {
     id: 5,
-    name: "David Mendez",
+    fullname: "David Mendez",
     idProject: 10101010,
     projectName: "Proyecto 5",
     budget: 290,
@@ -115,8 +129,14 @@ const rows = [
 ];
 
 export default function DataGridDemo() {
+
+  const [columnVisibilityModel] = useState({id: false});
+
   return (
     <>
+      <Button variant="contained" startIcon={<AddIcon />} color="error" sx={{mb: 4, fontWeight: 'bold'}}>
+        Crear nuevo proyecto
+      </Button>
       <Box sx={{ height: 400, width: "100%" }}>
         <DataGrid
           rows={rows}
@@ -131,6 +151,7 @@ export default function DataGridDemo() {
           pageSizeOptions={[5]}
           checkboxSelection
           disableRowSelectionOnClick
+          columnVisibilityModel={columnVisibilityModel}
         />
       </Box>
     </>
