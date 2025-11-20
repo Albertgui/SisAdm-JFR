@@ -7,7 +7,7 @@ import IconButton from "@mui/material/IconButton";
 
 export default function HeaderComponent() {
   return (
-    <Box sx={{ flexGrow: 1, mb: 4 }} >
+    <Box sx={{ flexGrow: 1, mb: 3 }} >
       <AppBar position="static">
         <Toolbar sx={{backgroundColor: "rgb(211, 47, 47)"}}>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} fontWeight={600}>

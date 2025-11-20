@@ -16,6 +16,7 @@ const style = {
   p: 4,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function UploadData({ rowData }: { rowData: GridRenderCellParams['row'] }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);

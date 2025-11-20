@@ -1,25 +1,30 @@
 import Box from "@mui/material/Box";
-import { DataGrid, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  type GridColDef,
+  type GridRenderCellParams,
+} from "@mui/x-data-grid";
 import UploadData from "./UploadData";
 import { Button } from "@mui/material";
-import AddIcon from '@mui/icons-material/Add';
+import AddIcon from "@mui/icons-material/Add";
 import { useState } from "react";
 import Actions from "./ActionsComponent";
 
 const columns: GridColDef[] = [
-  { 
-    field: "id", 
-    headerName: "ID", 
-    width: 50, 
+  {
+    field: "id",
+    headerName: "ID",
+    width: 50,
     headerAlign: "center",
-    align: 'center',
+    align: "center",
   },
   {
     field: "fullname",
     headerName: "Nombre completo",
-    width: 180,
+    flex: 2,
+    minWidth: 150,
     headerAlign: "center",
-    align: 'center',
+    align: "center",
   },
   {
     field: "idProject",
@@ -27,57 +32,61 @@ const columns: GridColDef[] = [
     type: "number",
     width: 100,
     headerAlign: "center",
-    align: 'center',
+    align: "center",
   },
   {
     field: "projectName",
     headerName: "Título del proyecto",
-    width: 250,
+    flex: 3,
+    minWidth: 200,
     headerAlign: "center",
-    align: 'center',
+    align: "center",
   },
   {
     field: "budget",
     headerName: "Presupuesto en $",
     type: "number",
-    width: 130,
+    flex: 1,
+    minWidth: 120,
     headerAlign: "center",
-    align: 'center',
+    align: "center",
   },
   {
     field: "initialDate",
     headerName: "Fecha de inicio",
-    width: 150,
+    flex: 1,
+    minWidth: 120,
     headerAlign: "center",
-    align: 'center',
+    align: "center",
   },
   {
     field: "finalDate",
     headerName: "Fecha de finalización",
-    width: 150,
+    flex: 1,
+    minWidth: 120,
     headerAlign: "center",
-    align: 'center',
+    align: "center",
   },
   {
-    field: 'bills',
-    headerName: 'Facturas',
+    field: "bills",
+    headerName: "Facturas",
     width: 85,
     renderCell: (params: GridRenderCellParams) => {
       return <UploadData rowData={params.row} />;
     },
-    headerAlign: 'center',
-    align: 'center',
+    headerAlign: "center",
+    align: "center",
   },
   {
-    field: 'actions',
-    headerName: 'Acciones',
+    field: "actions",
+    headerName: "Acciones",
     width: 85,
     renderCell: (params: GridRenderCellParams) => {
       return <Actions rowData={params.row} />;
     },
-    headerAlign: 'center',
-    align: 'center',
-  }
+    headerAlign: "center",
+    align: "center",
+  },
 ];
 
 const rows = [
@@ -88,7 +97,7 @@ const rows = [
     projectName: "Proyecto 1",
     budget: 1000,
     initialDate: "1/09/2025",
-    finalDate: "31/12/2025"
+    finalDate: "31/12/2025",
   },
   {
     id: 2,
@@ -97,16 +106,16 @@ const rows = [
     projectName: "Proyecto 2",
     budget: 3200,
     initialDate: "1/09/2025",
-    finalDate: "31/12/2025"
+    finalDate: "1/12/2025",
   },
-  { 
-    id: 3, 
-    fullname: "José Perez", 
-    idProject: 10293847, 
+  {
+    id: 3,
+    fullname: "José Perez",
+    idProject: 10293847,
     projectName: "Proyecto 3",
     budget: 300,
     initialDate: "1/09/2025",
-    finalDate: "31/12/2025" 
+    finalDate: "3/2/2025",
   },
   {
     id: 4,
@@ -115,7 +124,7 @@ const rows = [
     projectName: "Proyecto 4",
     budget: 680,
     initialDate: "1/09/2025",
-    finalDate: "31/12/2025"
+    finalDate: "31/12/2025",
   },
   {
     id: 5,
@@ -123,18 +132,30 @@ const rows = [
     idProject: 10101010,
     projectName: "Proyecto 5",
     budget: 290,
-    initialDate: "1/09/2025",
-    finalDate: "31/12/2025"
+    initialDate: "10/3/2025",
+    finalDate: "31/12/2025",
   },
 ];
 
 export default function DataGridDemo() {
-
-  const [columnVisibilityModel] = useState({id: false});
+  const [columnVisibilityModel] = useState({ id: false });
 
   return (
     <>
-      <Button variant="contained" startIcon={<AddIcon />} color="error" sx={{mb: 4, fontWeight: 'bold'}}>
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        color="error"
+        sx={{ mb: 4, mr:3, fontWeight: "bold" }}
+      >
+        Agregar encargados
+      </Button>
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        color="error"
+        sx={{ mb: 4, fontWeight: "bold" }}
+      >
         Crear nuevo proyecto
       </Button>
       <Box sx={{ height: 400, width: "100%" }}>

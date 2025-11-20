@@ -20,3 +20,8 @@
   height: 100%;
   object-fit: cover;
 }
+
+.modal-buttons {
+  margin: 2rem;
+  display: flex;
+}
