@@ -5,12 +5,10 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { IconButton, InputAdornment, Slide } from "@mui/material";
+import { Box, CircularProgress, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Select, Slide, Typography, type SelectChangeEvent } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import type { TransitionProps } from "@mui/material/transitions";
 import type { GridRenderCellParams } from "@mui/x-data-grid";
-import PersonIcon from "@mui/icons-material/Person";
-import BadgeIcon from "@mui/icons-material/Badge";
 import HomeRepairServiceIcon from "@mui/icons-material/HomeRepairService";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import dayjs, { Dayjs } from "dayjs";
@@ -19,16 +17,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-
-interface FormValues {
-  id: string;
-  fullname: string;
-  idProject: number;
-  projectName: string;
-  budget: number;
-  initialDate: string;
-  finalDate: string;
-}
+import type { FormValues, PersonData } from "../interface/interface";
+import { getAllPerson, isApiError } from "../utils/apiPerson";
 
 dayjs.extend(customParseFormat);
 type DateStateType = Dayjs | null;
@@ -57,9 +47,14 @@ export default function Actions({ rowData }: { rowData: GridRenderCellParams["ro
   });
   const [dateInitial, setDateInitial] = React.useState<DateStateType>(parseDate(rowData.initialDate));
   const [dateFinal, setDateFinal] = React.useState<DateStateType>(parseDate(rowData.finalDate));
+  const [responsable, setResponsable] = React.useState<number | string>('1');
+  const [personList, setPersonList] = React.useState<PersonData[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   const handleClickOpen = () => {
     setOpen(true);
+    getAllResponsable();
   };
 
   const handleClose = () => {
@@ -71,22 +66,69 @@ export default function Actions({ rowData }: { rowData: GridRenderCellParams["ro
     setFormState(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleChangeSelect = (event: SelectChangeEvent<number | string>) => {
+        setResponsable(event.target.value);
+    };
+
+  const getAllResponsable = async() => {
+    const data = await getAllPerson();
+    data.forEach(element => {
+      console.log(element.nombre)
+    });
+  }
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formattedInitialDate = dateInitial ? dateInitial.format("DD/MM/YYYY") : "";
     const formattedFinalDate = dateFinal ? dateFinal.format("DD/MM/YYYY") : "";
     const finalData: FormValues = {
-        id: rowData.id,
-        fullname: formState.fullname,
-        idProject: parseInt(formState.idProject),
-        projectName: formState.projectName,
-        budget: parseFloat(formState.budget),
-        initialDate: formattedInitialDate,
-        finalDate: formattedFinalDate,
+      id: rowData.id,
+      fullname: formState.fullname,
+      idProject: parseInt(formState.idProject),
+      projectName: formState.projectName,
+      budget: parseFloat(formState.budget),
+      initialDate: formattedInitialDate,
+      finalDate: formattedFinalDate,
     };
     console.log(finalData);
     handleClose();
   };
+
+  const fetchAllResponsables = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getAllPerson();
+      setPersonList(data);
+      if (!data.some(p => p.cedula == '1') && data.length > 0) {
+        setResponsable(data[0].cedula);
+      }
+    } catch (error) {
+      if (isApiError(error)) {
+        setError(error.message);
+      } else {
+        setError('Error desconocido al cargar los responsables.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, ['1']); 
+
+  React.useEffect(() => {
+    fetchAllResponsables();
+  }, [fetchAllResponsables]);
+    
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
+        <CircularProgress size="2rem" color="error" />
+        <Typography variant="body1" sx={{ ml: 2 }}>Cargando responsables...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return <Typography color="error">Error: {error}</Typography>;
+  }
 
   return (
     <React.Fragment>
@@ -105,48 +147,22 @@ export default function Actions({ rowData }: { rowData: GridRenderCellParams["ro
         <DialogTitle>Editar información</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit} id="subscription-form">
-            <TextField
-              autoFocus
-              margin="dense"
-              id="fullname"
-              name="fullname"
-              label="Nombre completo"
-              type="text"
-              fullWidth
-              variant="outlined"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              value={formState.fullname}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="dense"
-              id="cedula"
-              name="cedula"
-              label="Cédula"
-              type="text"
-              fullWidth
-              variant="outlined"
-              sx={{ mt: 3 }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <BadgeIcon />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              value={formState.idProject}
-              onChange={handleChange}
-            />
+            <FormControl fullWidth>
+              <InputLabel id="select-label">Age</InputLabel>
+              <Select
+                labelId="select-label"
+                id="simple-select"
+                value={responsable}
+                label="Responsable"
+                onChange={handleChangeSelect}
+              >
+                {personList.map((person) => (
+                    <MenuItem key={person.cedula} value={person.cedula}> 
+                        {person.nombre}
+                    </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <TextField
               margin="dense"
               id="titleProject"
@@ -156,6 +172,7 @@ export default function Actions({ rowData }: { rowData: GridRenderCellParams["ro
               fullWidth
               variant="outlined"
               sx={{ mt: 3 }}
+              autoComplete="off"
               slotProps={{
                 input: {
                   startAdornment: (
@@ -177,6 +194,7 @@ export default function Actions({ rowData }: { rowData: GridRenderCellParams["ro
               fullWidth
               variant="outlined"
               sx={{ mt: 3 }}
+              autoComplete="off"
               slotProps={{
                 input: {
                   startAdornment: (
@@ -217,7 +235,7 @@ export default function Actions({ rowData }: { rowData: GridRenderCellParams["ro
             </LocalizationProvider>
           </form>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: 'space-between', m: 2 }}>
+        <DialogActions sx={{ justifyContent: "space-between", m: 2 }}>
           <Button
             onClick={handleClose}
             color="error"
