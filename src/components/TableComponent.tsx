@@ -6,7 +6,7 @@ import {
 } from "@mui/x-data-grid";
 import UploadData from "./UploadData";
 import { Button, Grid, Typography } from "@mui/material";
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
 import { useEffect, useState } from "react";
 import Actions from "./ActionsComponent";
@@ -85,9 +85,6 @@ const columns: GridColDef[] = [
     field: "actions",
     headerName: "Acciones",
     width: 85,
-    renderCell: (params: GridRenderCellParams) => {
-      return <Actions rowData={params.row} />;
-    },
     headerAlign: "center",
     align: "center",
   },
@@ -99,22 +96,24 @@ export default function DataGridDemo() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadProyectos = async () => {
-      setLoading(true);
-      try {
-        const data = await getDataTable();
-        setProyectos(data);
-      } catch (error) {
-        if (isApiError(error)) {
-          setError(error.message);
-        } else {
-          setError("Ocurrió un error desconocido.");
-        }
-      } finally {
-        setLoading(false);
+  const loadProyectos = async () => {
+    setLoading(true);
+    try {
+      const data = await getDataTable();
+      setProyectos(data);
+      setError(null);
+    } catch (error) {
+      if (isApiError(error)) {
+        setError(error.message);
+      } else {
+        setError("Ocurrió un error desconocido.");
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadProyectos();
   }, []);
 
@@ -133,7 +132,8 @@ export default function DataGridDemo() {
     return proyectos.map((p) => ({
       id: p.id_proyecto,
       fullname: p.nombre,
-      idProject: p.cedula,
+      cedula: p.cedula,
+      idProject: p.id_proyecto,
       projectName: p.nombre_proyecto,
       budget: p.presupuesto,
       initialDate: getTime(p.fecha_inicio),
@@ -147,12 +147,12 @@ export default function DataGridDemo() {
         container
         spacing={0}
         direction="column"
-        alignItems="center" 
-        justifyContent="center" 
-        style={{ minHeight: '80vh' }}
+        alignItems="center"
+        justifyContent="center"
+        style={{ minHeight: "80vh" }}
       >
         <Grid>
-          <CircularProgress size="6rem" color="error"/>
+          <CircularProgress size="6rem" color="error" />
         </Grid>
         <Grid sx={{ mt: 3 }}>
           <Typography variant="h4" gutterBottom color="grey">
@@ -167,19 +167,19 @@ export default function DataGridDemo() {
     return (
       <>
         <Grid
-        container
-        spacing={0}
-        direction="column"
-        alignItems="center" 
-        justifyContent="center" 
-        style={{ minHeight: '80vh' }}
-      >
-        <Grid>
-          <Typography variant="h3" gutterBottom color="grey">
-            {error}
-          </Typography>
+          container
+          spacing={0}
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+          style={{ minHeight: "80vh" }}
+        >
+          <Grid>
+            <Typography variant="h3" gutterBottom color="grey">
+              {error}
+            </Typography>
+          </Grid>
         </Grid>
-      </Grid>
       </>
     );
   }
@@ -198,7 +198,17 @@ export default function DataGridDemo() {
       <Box sx={{ height: 400, width: "100%" }}>
         <DataGrid
           rows={getGridRows()}
-          columns={columns}
+          columns={columns.map((col) => {
+            if (col.field === "actions") {
+              return {
+                ...col,
+                renderCell: (params: GridRenderCellParams) => (
+                  <Actions rowData={params.row} refreshTable={loadProyectos} />
+                ),
+              };
+            }
+            return col;
+          })}
           initialState={{
             pagination: {
               paginationModel: {

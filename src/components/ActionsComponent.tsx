@@ -8,7 +8,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { Box, CircularProgress, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Select, Slide, Typography, type SelectChangeEvent } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import type { TransitionProps } from "@mui/material/transitions";
-import type { GridRenderCellParams } from "@mui/x-data-grid";
 import HomeRepairServiceIcon from "@mui/icons-material/HomeRepairService";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import dayjs, { Dayjs } from "dayjs";
@@ -17,8 +16,9 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import type { FormValues, PersonData } from "../interface/interface";
+import type { ActionsProps, PersonData, ProyectoDetalle } from "../interface/interface";
 import { getAllPerson, isApiError } from "../utils/apiPerson";
+import { editProyecto } from "../utils/apiProject";
 
 dayjs.extend(customParseFormat);
 type DateStateType = Dayjs | null;
@@ -37,17 +37,18 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function Actions({ rowData }: { rowData: GridRenderCellParams["row"] }) {
+export default function Actions({ rowData, refreshTable }: ActionsProps) {
   const [open, setOpen] = React.useState(false);
   const [formState, setFormState] = React.useState({
+    cedula: rowData.cedula,
     fullname: rowData.fullname,
-    idProject: rowData.idProject.toString(),
+    idProject: rowData.idProject,
     projectName: rowData.projectName,
-    budget: rowData.budget.toString(),
+    budget: rowData.budget,
   });
   const [dateInitial, setDateInitial] = React.useState<DateStateType>(parseDate(rowData.initialDate));
   const [dateFinal, setDateFinal] = React.useState<DateStateType>(parseDate(rowData.finalDate));
-  const [responsable, setResponsable] = React.useState<number | string>('1');
+  const [responsable, setResponsable] = React.useState<number | string>(rowData.cedula);
   const [personList, setPersonList] = React.useState<PersonData[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -77,20 +78,21 @@ export default function Actions({ rowData }: { rowData: GridRenderCellParams["ro
     });
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formattedInitialDate = dateInitial ? dateInitial.format("DD/MM/YYYY") : "";
     const formattedFinalDate = dateFinal ? dateFinal.format("DD/MM/YYYY") : "";
-    const finalData: FormValues = {
+    const finalData: ProyectoDetalle = {
+      cedula: responsable.toString(),
+      nombre_proyecto: formState.projectName,
+      presupuesto: formState.budget,
+      fecha_inicio: formattedInitialDate,
+      fecha_fin: formattedFinalDate,
       id: rowData.id,
-      fullname: formState.fullname,
-      idProject: parseInt(formState.idProject),
-      projectName: formState.projectName,
-      budget: parseFloat(formState.budget),
-      initialDate: formattedInitialDate,
-      finalDate: formattedFinalDate,
+      id_proyecto: formState.idProject,
     };
-    console.log(finalData);
+    await editProyecto(finalData);
+    refreshTable();
     handleClose();
   };
 
@@ -99,7 +101,7 @@ export default function Actions({ rowData }: { rowData: GridRenderCellParams["ro
     try {
       const data = await getAllPerson();
       setPersonList(data);
-      if (!data.some(p => p.cedula == '1') && data.length > 0) {
+      if (!data.some(p => p.cedula == rowData.cedula) && data.length > 0) {
         setResponsable(data[0].cedula);
       }
     } catch (error) {
@@ -111,7 +113,7 @@ export default function Actions({ rowData }: { rowData: GridRenderCellParams["ro
     } finally {
       setLoading(false);
     }
-  }, ['1']); 
+  }, [rowData.cedula]); 
 
   React.useEffect(() => {
     fetchAllResponsables();
@@ -147,8 +149,8 @@ export default function Actions({ rowData }: { rowData: GridRenderCellParams["ro
         <DialogTitle>Editar información</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit} id="subscription-form">
-            <FormControl fullWidth>
-              <InputLabel id="select-label">Age</InputLabel>
+            <FormControl fullWidth sx={{ mt: 3 }}>
+              <InputLabel id="select-label">Responsable</InputLabel>
               <Select
                 labelId="select-label"
                 id="simple-select"

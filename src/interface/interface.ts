@@ -1,6 +1,9 @@
+import type { GridRenderCellParams } from "@mui/x-data-grid";
+
 export interface ProyectoDetalle {
-    id_proyecto: string;
-    nombre: string;
+    id: string;
+    id_proyecto: number;
+    nombre?: string;
     cedula: string;
     nombre_proyecto: string;
     presupuesto: number;
@@ -29,4 +32,9 @@ export interface FormValues {
 export interface PersonData {
     nombre: string;
     cedula: string;
+}
+
+export interface ActionsProps {
+    rowData: GridRenderCellParams["row"];
+    refreshTable: () => void; 
 }
