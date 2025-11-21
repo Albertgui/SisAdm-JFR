@@ -1,18 +1,21 @@
 import Box from "@mui/material/Box";
 import {
   DataGrid,
+  useGridApiRef,
   type GridColDef,
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
 import UploadData from "./UploadData";
 import { Button, Grid, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
-import AddIcon from "@mui/icons-material/Add";
+import DownloadIcon from '@mui/icons-material/Download';
 import { useEffect, useState } from "react";
 import Actions from "./ActionsComponent";
 import type { ProyectoDetalle } from "../interface/interface";
 import { getDataTable, isApiError } from "../utils/apiProject";
 import CreatePerson from "./CreatePersonModal";
+import CreateProject from "./CreateProjectModal";
+import * as XLSX from 'xlsx';
 
 const columns: GridColDef[] = [
   {
@@ -31,7 +34,7 @@ const columns: GridColDef[] = [
     align: "center",
   },
   {
-    field: "idProject",
+    field: "cedula",
     headerName: "Cédula",
     type: "number",
     width: 100,
@@ -96,6 +99,22 @@ export default function DataGridDemo() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const apiRef = useGridApiRef();
+
+  const handleExport = () => {
+    const csv = apiRef.current?.getDataAsCsv({
+        fileName: 'Reporte_Proyectos_Completo',
+    });
+    convertCsvToXlsx(csv, 'Reporte_Proyectos_XLSX')
+  };
+
+  const convertCsvToXlsx = (csvString: string | undefined, fileName: string) => {
+    const worksheet = XLSX.read(csvString, { type: 'string', raw: true, FS: ',' }).Sheets.Sheet1;
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datos Exportados");
+    XLSX.writeFile(workbook, `${fileName}.xlsx`);
+  };
+  
   const loadProyectos = async () => {
     setLoading(true);
     try {
@@ -187,16 +206,19 @@ export default function DataGridDemo() {
   return (
     <>
       <CreatePerson></CreatePerson>
+      <CreateProject></CreateProject>
       <Button
         variant="contained"
-        startIcon={<AddIcon />}
-        color="error"
+        color="success"
+        startIcon={<DownloadIcon />}
         sx={{ mb: 4, fontWeight: "bold" }}
+        onClick={handleExport} 
       >
-        Crear nuevo proyecto
+        Exportar a Excel
       </Button>
       <Box sx={{ height: 400, width: "100%" }}>
         <DataGrid
+          apiRef={apiRef}
           rows={getGridRows()}
           columns={columns.map((col) => {
             if (col.field === "actions") {

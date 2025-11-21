@@ -57,7 +57,6 @@ export default function CreatePerson( ) {
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        
         const finalData: PersonData = {
             nombre: formState.nombre.trim(),
             cedula: formState.cedula.trim(),
@@ -66,13 +65,13 @@ export default function CreatePerson( ) {
             await postInfoPerson(finalData);
             setAlertState({
                 open: true,
-                message: `Persona ${finalData.nombre} creada con éxito`,
+                message: `Responsable: ${finalData.nombre} creada con éxito`,
                 severity: 'success',
             });
             handleClose();
         } catch (error) {
             console.error("Fallo al crear la persona:", error);
-            const errorMessage = (error instanceof Error) ? error.message : 'Error desconocido al crear persona';
+            const errorMessage = (error instanceof Error) ? error.message : 'Error desconocido al crear responsable';
             setAlertState({
                 open: true,
                 message: errorMessage,
@@ -108,7 +107,7 @@ export default function CreatePerson( ) {
                 fullWidth={true}
                 maxWidth={"sm"}
             >
-                <DialogTitle>Editar información</DialogTitle>
+                <DialogTitle>Crear responsable</DialogTitle>
                 <DialogContent>
                     <form onSubmit={handleSubmit} id="subscription-form">
                         <TextField
@@ -182,15 +181,15 @@ export default function CreatePerson( ) {
             autoHideDuration={1500}
             onClose={handleAlertClose}
             anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        >
-            <Alert
-                onClose={handleAlertClose}
-                severity={alertState.severity}
-                sx={{ width: '100%' }}
             >
-                {alertState.message}
-            </Alert>
-        </Snackbar>
+                <Alert
+                    onClose={handleAlertClose}
+                    severity={alertState.severity}
+                    sx={{ width: '100%' }}
+                >
+                    {alertState.message}
+                </Alert>
+            </Snackbar>
         </React.Fragment>
     );
 }

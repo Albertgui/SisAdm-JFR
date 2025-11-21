@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { environment } from '../environments/environment';
-import type { ProyectoDetalle } from '../interface/interface';
+import type { InfoProyectoCompleta, ProyectoDetalle } from '../interface/interface';
 
 /**
  * Función para obtener todos los proyectos con detalles de la persona.
@@ -35,8 +35,29 @@ export const getDataTable = async (): Promise<ProyectoDetalle[]> => {
     }
 }
 
-// Editar un proyecto
+// Crear un proyecto
+export const createProyecto = async (data: InfoProyectoCompleta): Promise<InfoProyectoCompleta[]>  => {
+    try {
+        const response = await axios.post(`${baseURL}/project`, data); 
+        if (response.data) {
+            return response.data.message as InfoProyectoCompleta[]; 
+        }
+        throw new Error('La API retornó datos en un formato inesperado.');
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            console.error('Error al obtener proyectos (API Response):', error.response.data.message);
+            throw new Error(error.response.data.message);
+        } else if (axios.isAxiosError(error)) {
+            console.error('Error de red al obtener proyectos:', error.message);
+            throw new Error('El servidor no está disponible. Revisa la conexión.');
+        } else {
+            console.error('Error desconocido al obtener proyectos:', error);
+            throw new Error('Ocurrió un error inesperado.');
+        }
+    }
+}
 
+// Editar un proyecto
 export const editProyecto = async (data: ProyectoDetalle): Promise<ProyectoDetalle[]> => {
     try {
         const response = await axios.put(`${baseURL}/project/${data.id_proyecto}`, data);
