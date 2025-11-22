@@ -205,17 +205,21 @@ export default function DataGridDemo() {
 
   return (
     <>
-      <CreatePerson></CreatePerson>
-      <CreateProject></CreateProject>
-      <Button
-        variant="contained"
-        color="success"
-        startIcon={<DownloadIcon />}
-        sx={{ mb: 4, fontWeight: "bold" }}
-        onClick={handleExport} 
-      >
-        Exportar a Excel
-      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Box>
+          <CreatePerson refreshTable={loadProyectos}></CreatePerson>
+          <CreateProject></CreateProject>
+        </Box>
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<DownloadIcon />}
+          sx={{ mb: 4, fontWeight: "bold" }}
+          onClick={handleExport} 
+        >
+          Exportar a Excel
+        </Button>
+      </Box>
       <Box sx={{ height: 400, width: "100%" }}>
         <DataGrid
           apiRef={apiRef}

@@ -34,7 +34,26 @@ export interface PersonData {
     cedula: string;
 }
 
-export interface ActionsProps {
-    rowData: GridRenderCellParams["row"];
+export interface PersonProps {
     refreshTable: () => void; 
 }
+
+export interface ActionsProps extends PersonProps{
+    rowData: GridRenderCellParams["row"];
+}
+
+export interface ValidationErrors {
+    responsable: string;
+    nombre_proyecto: string;
+    presupuesto: string;
+    fecha_inicio: string;
+    fecha_fin: string;
+};
+
+export interface TouchedState {
+    responsable: boolean;
+    nombre_proyecto: boolean;
+    presupuesto: boolean;
+    fecha_inicio: boolean;
+    fecha_fin: boolean;
+};

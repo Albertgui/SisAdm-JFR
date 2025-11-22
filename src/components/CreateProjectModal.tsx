@@ -29,11 +29,12 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import type { InfoProyectoCompleta, PersonData } from "../interface/interface";
+import type { InfoProyectoCompleta, PersonData, ValidationErrors } from "../interface/interface";
 import { getAllPerson, isApiError } from "../utils/apiPerson";
 import { createProyecto } from "../utils/apiProject";
 
 dayjs.extend(customParseFormat);
+
 type DateStateType = Dayjs | null;
 
 const Transition = React.forwardRef(function Transition(
@@ -55,7 +56,7 @@ export default function CreateProject() {
     nombre_proyecto: "",
     presupuesto: 0,
   });
-  const [dateInitial, setDateInitial] = React.useState<DateStateType | null>(null); 
+  const [dateInitial, setDateInitial] = React.useState<DateStateType | null>(null);
   const [dateFinal, setDateFinal] = React.useState<DateStateType | null>(null);
   const [responsable, setResponsable] = React.useState<number | string>("");
   const [personList, setPersonList] = React.useState<PersonData[]>([]);
@@ -66,6 +67,15 @@ export default function CreateProject() {
     message: "",
     severity: "success" as "success" | "error",
   });
+  const [isFormValid, setIsFormValid] = React.useState(false);
+  const [validationErrors, setValidationErrors] =
+    React.useState<ValidationErrors>({
+      responsable: "",
+      nombre_proyecto: "",
+      presupuesto: "",
+      fecha_inicio: "",
+      fecha_fin: "",
+    });
 
   const getAllResponsable = async () => {
     setLoading(true);
@@ -77,7 +87,7 @@ export default function CreateProject() {
       if (isApiError(error)) {
         setError(error.message);
       } else {
-        setError("Error desconocido al cargar los responsables.");
+        setError("Error desconocido al cargar los responsables");
       }
     } finally {
       setLoading(false);
@@ -89,8 +99,7 @@ export default function CreateProject() {
     setOpen(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const resetFormAndErrors = () => {
     setFormState({
       cedula: 0,
       fullname: "",
@@ -101,27 +110,126 @@ export default function CreateProject() {
     setResponsable("");
     setDateInitial(null);
     setDateFinal(null);
+    setValidationErrors({
+      responsable: "",
+      nombre_proyecto: "",
+      presupuesto: "",
+      fecha_inicio: "",
+      fecha_fin: "",
+    });
+    setIsFormValid(false)
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    resetFormAndErrors();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormState((prev) => ({ ...prev, [name]: value }));
+    setValidationErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleChangeSelect = (event: SelectChangeEvent<number | string>) => {
     setResponsable(event.target.value);
+    setValidationErrors((prev) => ({ ...prev, responsable: "" }));
   };
+
+  const handleDateChange = (date: DateStateType, field: "fecha_inicio" | "fecha_fin") => {
+    if (field === "fecha_inicio") {
+      setDateInitial(date);
+    } else {
+      setDateFinal(date);
+    }
+    setValidationErrors((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  /**
+  * Valida el formulario y actualiza los mensajes de error.
+  * @returns {boolean} True si el formulario es válido, False en caso contrario.
+  */
+
+  const validateForm = (): boolean => {
+    const errors: ValidationErrors = {
+      responsable: "",
+      nombre_proyecto: "",
+      presupuesto: "",
+      fecha_inicio: "",
+      fecha_fin: "",
+    };
+    let isValid = true;
+    if (!responsable) {
+      errors.responsable = "Debe seleccionar un responsable";
+      isValid = false;
+    }
+    if (!formState.nombre_proyecto) {
+      errors.nombre_proyecto = "El título del proyecto no puede estar vacío";
+      isValid = false;
+    } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(formState.nombre_proyecto)) {
+      errors.nombre_proyecto = "Solo se permiten letras y espacios";
+      isValid = false;
+    }
+    if (formState.presupuesto === 0 && (formState.presupuesto as unknown) !== "0") {
+      if (formState.presupuesto === 0 || (formState.presupuesto as unknown) === "") {
+        errors.presupuesto = "El presupuesto no puede estar vacío";
+        isValid = false;
+      }
+    } else if (!/^[0-9]+$/.test(formState.presupuesto.toString())) {
+      errors.presupuesto = "Solo se permiten números (sin decimales)";
+      isValid = false;
+    }
+    if (!dateInitial) {
+      errors.fecha_inicio = "Debe seleccionar una fecha de inicio";
+      isValid = false;
+    }
+    if (!dateFinal) {
+      errors.fecha_fin = "Debe seleccionar una fecha final";
+      isValid = false;
+    }
+    setValidationErrors(errors);
+    return isValid;
+  };
+
+  React.useEffect(() => {
+    if (open) {
+      const valid = validateForm();
+      setIsFormValid(valid);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    formState.nombre_proyecto,
+    formState.presupuesto,
+    responsable,
+    dateInitial,
+    dateFinal,
+    open,
+  ]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formattedInitialDate = dateInitial
-      ? dateInitial.format("DD/MM/YYYY")
-      : "";
+    if (!validateForm()) {
+      setAlertState({
+        open: true,
+        message: "Por favor, corrija los errores del formulario",
+        severity: "error",
+      });
+      return;
+    }
+    if (!validateForm()) {
+      setAlertState({
+        open: true,
+        message: "Por favor, corrija los errores del formulario",
+        severity: "error",
+      });
+      return;
+    }
+    const formattedInitialDate = dateInitial ? dateInitial.format("DD/MM/YYYY") : "";
     const formattedFinalDate = dateFinal ? dateFinal.format("DD/MM/YYYY") : "";
     const finalData: InfoProyectoCompleta = {
       id_persona: responsable.toString(),
       nombre_proyecto: formState.nombre_proyecto,
-      presupuesto: formState.presupuesto,
+      presupuesto: Number(formState.presupuesto),
       fecha_inicio: formattedInitialDate,
       fecha_fin: formattedFinalDate,
     };
@@ -129,16 +237,13 @@ export default function CreateProject() {
       await createProyecto(finalData);
       setAlertState({
         open: true,
-        message: `El proyecto: ${finalData.nombre_proyecto} fue creado con éxito`, 
+        message: `El proyecto: ${finalData.nombre_proyecto} fue creado con éxito`,
         severity: "success",
       });
       handleClose();
     } catch (error) {
       console.error("Fallo al crear el proyecto:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Error desconocido al crear proyecto";
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido al crear proyecto";
       setAlertState({
         open: true,
         message: errorMessage,
@@ -180,7 +285,11 @@ export default function CreateProject() {
         <DialogTitle>Crear proyecto</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit} id="subscription-form">
-            <FormControl fullWidth sx={{ mt: 3 }}>
+            <FormControl
+              fullWidth
+              sx={{ mt: 3 }}
+              error={!!validationErrors.responsable}
+            >
               <InputLabel id="select-label">Responsable</InputLabel>
               <Select
                 labelId="select-label"
@@ -217,6 +326,11 @@ export default function CreateProject() {
                   ))
                 )}
               </Select>
+              {validationErrors.responsable && (
+                <Alert severity="error" sx={{ mt: 1 }}>
+                  {validationErrors.responsable}
+                </Alert>
+              )}
             </FormControl>
             <TextField
               margin="dense"
@@ -239,6 +353,8 @@ export default function CreateProject() {
               }}
               value={formState.nombre_proyecto}
               onChange={handleChange}
+              error={!!validationErrors.nombre_proyecto}
+              helperText={validationErrors.nombre_proyecto}
             />
             <TextField
               margin="dense"
@@ -261,6 +377,8 @@ export default function CreateProject() {
               }}
               value={formState.presupuesto}
               onChange={handleChange}
+              error={!!validationErrors.presupuesto}
+              helperText={validationErrors.presupuesto}
             />
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer
@@ -278,13 +396,29 @@ export default function CreateProject() {
                   label="Fecha de inicio"
                   format="DD/MM/YYYY"
                   value={dateInitial}
-                  onChange={(newValue) => setDateInitial(newValue)}
+                  onChange={(newValue) =>
+                    handleDateChange(newValue, "fecha_inicio")
+                  }
+                  slotProps={{
+                    textField: {
+                      error: !!validationErrors.fecha_inicio,
+                      helperText: validationErrors.fecha_inicio,
+                    },
+                  }}
                 />
                 <DatePicker
                   label="Fecha final"
                   format="DD/MM/YYYY"
                   value={dateFinal}
-                  onChange={(newValue) => setDateFinal(newValue)}
+                  onChange={(newValue) =>
+                    handleDateChange(newValue, "fecha_fin")
+                  }
+                  slotProps={{
+                    textField: {
+                      error: !!validationErrors.fecha_fin,
+                      helperText: validationErrors.fecha_fin,
+                    },
+                  }}
                 />
               </DemoContainer>
             </LocalizationProvider>
@@ -304,6 +438,7 @@ export default function CreateProject() {
             form="subscription-form"
             variant="contained"
             sx={{ fontWeight: "bold" }}
+            disabled={!isFormValid}
           >
             Guardar
           </Button>
