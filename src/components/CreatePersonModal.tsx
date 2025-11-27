@@ -10,7 +10,7 @@ import BadgeIcon from "@mui/icons-material/Badge";
 import { Alert, InputAdornment, Slide, Snackbar } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import type { TransitionProps } from "@mui/material/transitions";
-import type { PersonData, PersonProps } from "../interface/interface";
+import type { CreatePersonProps, PersonData } from "../interface/interface";
 import { postInfoPerson } from "../utils/apiPerson.ts";
 
 const Transition = React.forwardRef(function Transition(
@@ -28,7 +28,7 @@ const initialFormState: PersonData = {
   cedula: "",
 };
 
-export default function CreatePerson({ refreshTable }: PersonProps) {
+export default function CreatePerson({ refreshTable }: CreatePersonProps) {
   const [open, setOpen] = React.useState(false);
   const [formState, setFormState] =
     React.useState<PersonData>(initialFormState);

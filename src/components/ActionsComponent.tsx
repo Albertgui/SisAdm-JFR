@@ -33,8 +33,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import type {
-  ActionsProps,
   PersonData,
+  PersonProps,
   ProyectoDetalle,
 } from "../interface/interface";
 import { getAllPerson, isApiError } from "../utils/apiPerson";
@@ -63,7 +63,7 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function Actions({ rowData, refreshTable }: ActionsProps) {
+export default function Actions({ rowData, refreshTable }: PersonProps) {
   const [open, setOpen] = React.useState(false);
   const [formState, setFormState] = React.useState({
     cedula: rowData.cedula,
@@ -72,15 +72,9 @@ export default function Actions({ rowData, refreshTable }: ActionsProps) {
     projectName: rowData.projectName,
     budget: rowData.budget,
   });
-  const [dateInitial, setDateInitial] = React.useState<DateStateType>(
-    parseDate(rowData.initialDate)
-  );
-  const [dateFinal, setDateFinal] = React.useState<DateStateType>(
-    parseDate(rowData.finalDate)
-  );
-  const [responsable, setResponsable] = React.useState<number | string>(
-    rowData.cedula ?? ""
-  );
+  const [dateInitial, setDateInitial] = React.useState<DateStateType>(parseDate(rowData.initialDate));
+  const [dateFinal, setDateFinal] = React.useState<DateStateType>(parseDate(rowData.finalDate));
+  const [responsable, setResponsable] = React.useState<number | string>(rowData.cedula ?? "");
   const [personList, setPersonList] = React.useState<PersonData[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -89,6 +83,12 @@ export default function Actions({ rowData, refreshTable }: ActionsProps) {
     message: "",
     severity: "success" as "success" | "error",
   });
+
+  const isResponsableValid = responsable !== "" && responsable !== null && responsable !== undefined;
+  const isProjectNameValid = formState.projectName && formState.projectName.trim().length > 0;
+  const isBudgetValid = /^\d+(\.\d+)?$/.test(String(formState.budget));
+  const isDatesValid = dateInitial !== null && dateInitial.isValid() && dateFinal !== null && dateFinal.isValid();
+  const isFormValid = isResponsableValid && isProjectNameValid && isBudgetValid && isDatesValid;
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -223,7 +223,7 @@ export default function Actions({ rowData, refreshTable }: ActionsProps) {
         <DialogContent>
           <form onSubmit={handleSubmit} id="subscription-form">
             {personList && personList.length > 0 ? (
-              <FormControl fullWidth sx={{ mt: 3 }}>
+              <FormControl fullWidth sx={{ mt: 3 }} error={!isResponsableValid}>
                 <InputLabel id="select-label">Responsable</InputLabel>
                 <Select
                   labelId="select-label"
@@ -268,6 +268,8 @@ export default function Actions({ rowData, refreshTable }: ActionsProps) {
               variant="outlined"
               sx={{ mt: 3 }}
               autoComplete="off"
+              error={!isProjectNameValid && formState.projectName !== ""}
+              helperText={!isProjectNameValid && formState.projectName !== "" ? "El título es requerido" : ""}
               slotProps={{
                 input: {
                   startAdornment: (
@@ -290,6 +292,8 @@ export default function Actions({ rowData, refreshTable }: ActionsProps) {
               variant="outlined"
               sx={{ mt: 3 }}
               autoComplete="off"
+              error={!isBudgetValid && formState.budget !== ""}
+              helperText={!isBudgetValid && formState.budget !== "" ? "Ingrese un número válido" : ""}
               slotProps={{
                 input: {
                   startAdornment: (
@@ -319,12 +323,22 @@ export default function Actions({ rowData, refreshTable }: ActionsProps) {
                   format="DD/MM/YYYY"
                   value={dateInitial}
                   onChange={(newValue) => setDateInitial(newValue)}
+                  slotProps={{
+                    textField: {
+                        error: !dateInitial || !dateInitial.isValid()
+                    }
+                  }}
                 />
                 <DatePicker
                   label="Fecha final"
                   format="DD/MM/YYYY"
                   value={dateFinal}
                   onChange={(newValue) => setDateFinal(newValue)}
+                  slotProps={{
+                    textField: {
+                        error: !dateFinal || !dateFinal.isValid()
+                    }
+                  }}
                 />
               </DemoContainer>
             </LocalizationProvider>
@@ -344,6 +358,7 @@ export default function Actions({ rowData, refreshTable }: ActionsProps) {
             form="subscription-form"
             variant="contained"
             sx={{ fontWeight: "bold" }}
+            disabled={!isFormValid}
           >
             Guardar
           </Button>

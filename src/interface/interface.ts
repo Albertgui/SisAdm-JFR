@@ -34,12 +34,16 @@ export interface PersonData {
     cedula: string;
 }
 
-export interface PersonProps {
+export interface ActionsProps{
+    rowData: GridRenderCellParams["row"];
+}
+
+export interface CreatePersonProps {
     refreshTable: () => void; 
 }
 
-export interface ActionsProps extends PersonProps{
-    rowData: GridRenderCellParams["row"];
+export interface PersonProps extends ActionsProps{
+    refreshTable: () => void; 
 }
 
 export interface ValidationErrors {

@@ -1,43 +1,160 @@
-import { useState } from 'react';
-import Modal from '@mui/material/Modal';
-import Box from '@mui/material/Box';
-import DescriptionIcon from '@mui/icons-material/Description';
-import { type GridRenderCellParams } from '@mui/x-data-grid';
-import { IconButton } from '@mui/material';
-import BillsCarousel from './CarouselComponent';
+import { useState } from "react";
+import DescriptionIcon from "@mui/icons-material/Description";
+import {
+  Alert,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Slide,
+  Snackbar,
+} from "@mui/material";
+import type { ActionsProps } from "../interface/interface";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import type { TransitionProps } from "@mui/material/transitions";
+import React from "react";
 
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  p: 4,
-};
+const Transition = React.forwardRef(function Transition(
+  props: TransitionProps & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    children: React.ReactElement<any, any>;
+  },
+  ref: React.Ref<unknown>
+) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function UploadData({ rowData }: { rowData: GridRenderCellParams['row'] }) {
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+function UploadData({ rowData }: ActionsProps) {
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [alertState, setAlertState] = React.useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
+
+  const handleOpen = () => {
+    setOpen(true);
+    console.log(rowData);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleAlertClose = (
+    _event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setAlertState({ ...alertState, open: false });
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError(null);
+    setSelectedFile(null);
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        setFileError("El archivo excede el límite de 10MB");
+        event.target.value = "";
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
 
   return (
-    <div>
+    <>
       <IconButton aria-label="delete" onClick={handleOpen} color="error">
         <DescriptionIcon />
       </IconButton>
-      <Modal
+      <Dialog
         open={open}
         onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
+        slots={{
+          transition: Transition,
+        }}
+        fullWidth={true}
+        maxWidth={"sm"}
       >
-        <Box sx={style}>
-          <BillsCarousel></BillsCarousel>
-        </Box>
-      </Modal>
-    </div>
+        <DialogTitle>Subir factura</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2}}>
+            <input
+              accept="image/*"
+              style={{ display: "none" }}
+              id="raised-button-file"
+              multiple
+              type="file"
+              onChange={handleFileChange}
+            />
+            <label htmlFor="raised-button-file">
+              <Button
+                variant="contained"
+                component="span"
+                startIcon={<CloudUploadIcon />}
+                color={fileError ? "error" : "primary"}
+                sx={{ fontWeight: "bold" }}
+              >
+                {selectedFile
+                  ? "Cambiar Archivo"
+                  : "Seleccionar Archivo (Máx 10MB)"}
+              </Button>
+            </label>
+          </Box>
+          <Box sx={{ mt: 2 }}>
+            {selectedFile && (
+              <Alert severity="success">
+                Archivo seleccionado: **{selectedFile.name}** (
+                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+              </Alert>
+            )}
+            {fileError && <Alert severity="error">{fileError}</Alert>}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "space-between", m: 2 }}>
+          <Button
+            onClick={handleClose}
+            color="error"
+            variant="contained"
+            sx={{ fontWeight: "bold" }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="subscription-form"
+            variant="contained"
+            sx={{ fontWeight: "bold" }}
+          >
+            Guardar
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={alertState.open}
+        autoHideDuration={3000}
+        onClose={handleAlertClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleAlertClose}
+          severity={alertState.severity}
+          sx={{ width: "100%" }}
+        >
+          {alertState.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }
 

@@ -57,6 +57,48 @@ export const createProyecto = async (data: InfoProyectoCompleta): Promise<InfoPr
     }
 }
 
+// Cargar imágenes
+export const getImg = async(id: number) => {
+    try {
+        const response = await axios.get(`${baseURL}/project/${id}/bills`); 
+        if (response.data) {
+            return response.data.message; 
+        }
+        throw new Error('La API retornó datos en un formato inesperado.');
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            console.error('Error al obtener las imágenes (API Response):', error.response.data.message);
+            throw new Error(error.response.data.message);
+        } else if (axios.isAxiosError(error)) {
+            console.error('Error de red al obtener las imágenes:', error.message);
+            throw new Error('El servidor no está disponible. Revisa la conexión.');
+        } else {
+            console.error('Error desconocido al obtener las imágenes:', error);
+            throw new Error('Ocurrió un error inesperado.');
+        }
+    }
+}
+
+// Subir imágenes
+export const uploadImg = async(formData: FormData) => {
+    try {
+        await axios.post(`${baseURL}/project/upload-img`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            console.error('Error al crear las imágenes (API Response):', error.response.data.message);
+            throw new Error(error.response.data.message);
+        } else if (axios.isAxiosError(error)) {
+            console.error('Error de red al crear las imágenes:', error.message);
+            throw new Error('El servidor no está disponible. Revisa la conexión.');
+        } else {
+            console.error('Error desconocido al crear las imágenes:', error);
+            throw new Error('Ocurrió un error inesperado.');
+        }
+    }
+}
+
 // Editar un proyecto
 export const editProyecto = async (data: ProyectoDetalle): Promise<ProyectoDetalle[]> => {
     try {
