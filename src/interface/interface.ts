@@ -61,3 +61,9 @@ export interface TouchedState {
     fecha_inicio: boolean;
     fecha_fin: boolean;
 };
+
+export interface Factura {
+    id: number;
+    nombre_archivo: string,
+    url_completa: string
+}

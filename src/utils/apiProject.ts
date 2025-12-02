@@ -62,7 +62,7 @@ export const getImg = async(id: number) => {
     try {
         const response = await axios.get(`${baseURL}/project/${id}/bills`); 
         if (response.data) {
-            return response.data.message; 
+            return response.data; 
         }
         throw new Error('La API retornó datos en un formato inesperado.');
     } catch (error) {
@@ -82,12 +82,10 @@ export const getImg = async(id: number) => {
 // Subir imágenes
 export const uploadImg = async(formData: FormData) => {
     try {
-        await axios.post(`${baseURL}/project/upload-img`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        await axios.post(`${baseURL}/project/upload-img`, formData);
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
-            console.error('Error al crear las imágenes (API Response):', error.response.data.message);
+            console.error('Error al crear las imágenes (API Response):', error.response.data);
             throw new Error(error.response.data.message);
         } else if (axios.isAxiosError(error)) {
             console.error('Error de red al crear las imágenes:', error.message);
