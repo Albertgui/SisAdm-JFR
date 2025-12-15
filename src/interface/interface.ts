@@ -67,3 +67,9 @@ export interface Factura {
     nombre_archivo: string,
     url_completa: string
 }
+
+export interface User {
+    id: number;
+    username: string;
+    pass: string;
+}

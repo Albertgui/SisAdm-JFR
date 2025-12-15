@@ -8,7 +8,7 @@ import type { InfoProyectoCompleta, ProyectoDetalle } from '../interface/interfa
  * @returns Promesa que resuelve en el objeto Persona creado por el servidor.
  */
 
-const baseURL = environment.urlApi
+const baseURL = environment.urlApi;
 
 // Obtener datos para la tabla
 export const getDataTable = async (): Promise<ProyectoDetalle[]> => {

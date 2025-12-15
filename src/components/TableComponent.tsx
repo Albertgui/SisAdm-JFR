@@ -105,7 +105,7 @@ export default function DataGridDemo() {
     const csv = apiRef.current?.getDataAsCsv({
         fileName: 'Reporte_Proyectos_Completo',
     });
-    convertCsvToXlsx(csv, 'Reporte_Proyectos_XLSX')
+    convertCsvToXlsx(csv, 'Reporte_Proyectos_XLSX');
   };
 
   const convertCsvToXlsx = (csvString: string | undefined, fileName: string) => {

@@ -1,13 +1,9 @@
-import HeaderComponent from "./components/HeaderComponent";
-import DataGridDemo from "./components/TableComponent";
+import { Router } from "./routes/Routes";
 
 export const App = () => {
   return (
     <>
-      <HeaderComponent />
-      <div style={{padding: 15}}>
-        <DataGridDemo></DataGridDemo>
-      </div>
+      <Router></Router>
     </>
   );
 }
