@@ -60,7 +60,6 @@ function UploadData({ rowData }: ActionsProps) {
     try {
       const bills = await getImg(rowData.idProject);
       setFacturas(bills);
-      console.log(facturas)
     } catch (error) {
       console.error("Error al cargar facturas:", error);
       setFacturas([]);

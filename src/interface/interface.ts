@@ -69,7 +69,7 @@ export interface Factura {
 }
 
 export interface User {
-    id: number;
+    id?: number;
     username: string;
     pass: string;
 }

@@ -4,8 +4,17 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import LogoutIcon from "@mui/icons-material/Logout";
 import IconButton from "@mui/material/IconButton";
+import { useNavigate } from 'react-router-dom'
 
 export default function HeaderComponent() {
+
+  const navigate = useNavigate();
+
+  const logOut = () => {
+    sessionStorage.removeItem('authToken');
+    navigate('/login');
+  }
+
   return (
     <Box sx={{ flexGrow: 1, mb: 3 }} >
       <AppBar position="static">
@@ -15,6 +24,7 @@ export default function HeaderComponent() {
           </Typography>
           <IconButton
             aria-label="logout"
+            onClick={logOut}
             sx={{
               color: "#ffffffff",
             }}
